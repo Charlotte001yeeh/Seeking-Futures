@@ -1,0 +1,19 @@
+{
+  "name": "seeking-futures-realtime-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "期货 20 日涨跌幅 rank20 实时后端：轮询公开实时行情 → 重算排名 → SSE 推送 + REST + 局域网前端",
+  "main": "./src/index.mjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "verify": "node test/verify.mjs"
+  },
+  "dependencies": {},
+  "author": "fyc",
+  "license": "MIT",
+  "comment": "刻意零三方依赖：本地长期运行的服务不需要构建步骤与 node_modules 漂移。"
+}

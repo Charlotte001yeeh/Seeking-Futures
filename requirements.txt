@@ -1,0 +1,47 @@
+# ============================================================================
+#  依赖清单（requirements）
+# ============================================================================
+#  本项目**运行时零第三方依赖** —— 产品链路上只允许 Node 内置模块（node:*）
+#  与仓库内的相对 import。这一点有可执行证明：
+#      node standalone/test/verify-independence.mjs      # 传递闭包 28 文件 / 第三方依赖 0 个
+#
+#  下面只列**构建/开发**时才需要的东西。格式沿用 pip requirements 的写法
+#  （`包==版本  # 说明`），便于一眼看清"装什么、为什么装"；Node 侧的可执行版本
+#  声明在 package.json 的 devDependencies。
+#
+#  安装：
+#      npm install            # 按 package.json + package-lock.json 安装（推荐）
+#  等价手工安装：
+#      npm i -D typescript esbuild @types/node
+# ============================================================================
+
+
+# ── 运行时（必须）───────────────────────────────────────────────────────────
+# Node.js 内置模块即可：node:fs / node:path / node:http / node:https / node:url /
+# node:os / node:child_process / node:readline … 不需要任何 npm 包。
+node>=20.10            # 实测环境 v24.21.0；>=20.10 才提供稳定的 fetch / node:test / TextDecoder('gb18030')
+                       # 说明：GB18030 解码依赖 Node 内置 ICU（官方安装包默认 full-icu）
+
+# ── 构建（只有改 rank20-daemon/src/**.ts 时才需要）──────────────────────────
+typescript>=5.9.0      # 编译 rank20-daemon/src → dist/（逐模块 + .d.ts）
+                       # 本机实测：6.0.3；5.9 亦可
+esbuild>=0.25.0        # 打包 rank20-daemon/src/index.ts → lib/index.js（单文件，供 DSH 宿主加载）
+                       # 本机实测：0.28.1
+@types/node>=22.20.0   # rank20-daemon 的 TS 类型（tsconfig 里 "types": ["node"]）
+
+# ── 可选：DSH 插件形态（**产品不依赖**，见 docs/11-独立性验收.md）──────────
+# 只有要把每日任务挂到 DSH 宿主里跑时才需要；用 standalone/ 时完全不需要。
+# @deepseek-ai/cordis     >=4.0.0-rc <5      # 由宿主注入，不要自己装
+# schemastery             ^3.18.0            # 插件的配置 schema
+# （这两项已声明在 rank20-daemon/package.json 的 peerDependencies 里，由宿主提供）
+
+
+# ── 显式声明的"不依赖"清单 ──────────────────────────────────────────────────
+# 以下常见依赖本项目**刻意不用**，避免供应链与体积问题：
+#   · 无图表库（日K线用原生 Canvas 手绘）
+#   · 无 Web 框架（前端是原生 DOM + SSE）
+#   · 无 HTTP 框架（node:http 起服务）
+#   · 无数据库驱动（落盘 JSONL / JSON / Markdown）
+#   · 无 WebSocket 库（用 SSE 单向推送）
+#   · 无 axios / node-fetch（用 Node 内置 fetch）
+#   · 无 dotenv（tools 级别的 30 行 .env 解析在 rank20-daemon/src/env.ts）

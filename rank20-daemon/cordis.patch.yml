@@ -1,0 +1,56 @@
+# ============================================================================
+# dsh-rank20-daemon —— DSH bundle patch（**可选组件**，产品不依赖它）
+# ============================================================================
+# 随插件源码固定发布，**不在启动时动态生成**。
+# DSH 按 bundle 层栈叠加各插件 patch；本文件把守护进程挂进 profile 配置树，
+# 并把运行时参数固定在源码里（而不是靠手改 profile 的 package.json）。
+#
+# 何时需要它：只用独立调度器（standalone/）跑日报时**不需要**本文件对应的插件；
+#   它适合"希望由 DSH 宿主负责每日出表"的部署。
+#
+# 安装 / 卸载（唯一入口，把 <repo> 换成你的实际路径）：
+#   dsh plugin --profile web add link:<repo>/rank20-daemon
+#   dsh plugin --profile web remove dsh-rank20-daemon
+#
+# 更新代码后先验证组合，再启动：
+#   dsh --profile web --dump-config
+# ============================================================================
+
+- insert:
+    - id: rank20-daemon
+      name: dsh-rank20-daemon
+      config:
+        # ── 每日日报（官方交易所日报口径 = 权威值）─────────────────────
+        # ⚠️ 本部署**由独立调度器承担每日日报**：
+        #      standalone/scheduler.mjs（随 standalone/start.mjs 一起跑，脱离 DSH）
+        #    因此这里 dailyEnabled: false —— 否则两个组件都在 09:00:00 启动，
+        #    各自的"当天是否已产出"幂等检查都发生在对方写盘之前（竞态挡不住），
+        #    结果是**同一时刻各完整抓一遍**六所 32 天数据（各约 2.7 万行），
+        #    并并发写同一批文件（base.json / 盘中实时.md / kline/）。
+        #    这与 rtEnabled:false 是同一个理由：一件事只让一个组件做。
+        #    需要插件自己跑日报时（例如不启动 standalone），把它改成 true。
+        dailyEnabled: false
+        hour: 9              # 每日 09:00 出日报快照
+        minute: 0
+        lookbackDays: 32     # 采集最近 32 个工作日（须 ≥ 26 才能覆盖 T−20）
+
+        # ── 启动语义（幂等；热重载不再触发 95s 抓取）───────────────────
+        # runOnStart     ：启动时做「今天是否已完成」的幂等检查（状态文件 / 当日 base.json）
+        # catchUpOnStart ：是否允许在启动/热重载时真的补跑抓取。
+        #   ⚠️ 默认 false —— 开发期热重载绝不能触发一次 95s 的历史行情抓取。
+        #   需要补跑时临时改成 true，跑完再改回。
+        runOnStart: true
+        catchUpOnStart: false
+
+        # ── 卸载清理 ────────────────────────────────────────────────────
+        cleanupTimeoutMs: 5000   # dispose 等待在途任务的上限；超时记错误但不阻塞热重载
+
+        outDir: ''               # 留空 = <workspace>/rank20
+        stateFile: ''            # 留空 = <dshHome>/super-injector/dsh-rank20-daemon.state.json
+
+        # ── 盘中实时 ───────────────────────────────────────────────────
+        # 实时轮询已移交独立服务 realtime-server（避免两处同时打数据源，
+        # 否则违反 docs/10 §4.3 的请求速率闸门），此处只保留日报职责。
+        rtEnabled: false
+        rtIntervalSec: 2
+        rtName: 盘中实时

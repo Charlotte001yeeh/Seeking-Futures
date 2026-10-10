@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>期货 20 日涨跌幅 rank20 · 实时</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<!-- ── 顶栏 ─────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">期货 rank20<span class="sub">实时</span></div>
+
+  <div class="meta">
+    <span class="kv"><i>交易日</i><b id="tradeDate">—</b></span>
+    <span class="kv"><i>基准日</i><b id="baseDate">—</b></span>
+    <span class="kv"><i>行情时间</i><b id="quoteTime">—</b></span>
+    <span class="kv"><i>延迟</i><b id="latency">—</b></span>
+  </div>
+
+  <div class="status">
+    <span class="pill" id="connPill" data-state="init"><span class="dot"></span><span id="connText">连接中…</span></span>
+    <span class="pill" id="srcPill" data-state="init"><span class="dot"></span><span id="srcText">数据源 —</span></span>
+    <span class="pill" id="livePill" data-state="init"><span class="dot"></span><span id="liveText">换价 —</span></span>
+  </div>
+
+  <div class="tools">
+    <input id="search" type="search" placeholder="搜索品种  /" autocomplete="off" />
+  </div>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+
+<!-- ── 双榜：点击任意行**就地向下展开**（K线 / 硬逻辑 / 数据）────────── -->
+<main class="boards" id="boards">
+  <section class="board" id="boardGain" tabindex="0">
+    <h2><span class="tag up">▲</span>涨幅榜 rank20 <em id="gainCount"></em>
+      <span class="hint">点击任意行 ▾ 就地展开日K / 硬逻辑</span></h2>
+    <div class="tableWrap">
+      <table class="grid">
+        <thead><tr>
+          <th class="c-rank">排名</th><th class="c-name">品种</th><th class="c-contract">主力合约</th>
+          <th class="c-num">20日涨跌%</th><th class="c-num c-p2">当日涨跌%</th>
+          <th class="c-num">最新价</th><th class="c-num c-p2">持仓量(变化)</th>
+          <th class="c-num c-p2">成交量</th><th class="c-num c-p2">成交额</th>
+          <th class="c-flag">标记</th>
+        </tr></thead>
+        <tbody id="bodyGain"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="board" id="boardLoss" tabindex="0">
+    <h2><span class="tag down">▼</span>跌幅榜 rank20 <em id="lossCount"></em>
+      <span class="hint">点击任意行 ▾ 就地展开日K / 硬逻辑</span></h2>
+    <div class="tableWrap">
+      <table class="grid">
+        <thead><tr>
+          <th class="c-rank">排名</th><th class="c-name">品种</th><th class="c-contract">主力合约</th>
+          <th class="c-num">20日涨跌%</th><th class="c-num c-p2">当日涨跌%</th>
+          <th class="c-num">最新价</th><th class="c-num c-p2">持仓量(变化)</th>
+          <th class="c-num c-p2">成交量</th><th class="c-num c-p2">成交额</th>
+          <th class="c-flag">标记</th>
+        </tr></thead>
+        <tbody id="bodyLoss"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- ── 运行状态模块（榜单下方）：默认折叠成一行，把竖直空间让给双榜 ──────── -->
+<section class="ops collapsed" id="ops">
+  <div class="opsHead">
+    <b>运行状态</b>
+    <span class="muted" id="opsSummary">加载中…</span>
+    <button id="opsToggle" class="ghostBtn" title="收起 / 展开">展开 ▸</button>
+  </div>
+
+  <div class="opsBody" id="opsBody">
+    <!-- ① 数据源 -->
+    <div class="opsCard">
+      <h4>
+        数据源连通性 · 延迟
+        <button id="srcProbe" class="ghostBtn">重新检测</button>
+        <span class="muted" id="srcMeta"></span>
+      </h4>
+      <div class="srcWrap">
+        <table class="srcTable">
+          <thead><tr>
+            <th>源</th><th>地址</th><th class="c-st">状态</th><th class="c-lat">延迟</th><th>说明</th>
+          </tr></thead>
+          <tbody id="srcRows"><tr><td colspan="5" class="muted">检测中…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ② 模型 API -->
+    <div class="opsCard">
+      <h4>模型 API<span class="muted" id="mMeta"></span></h4>
+      <form id="modelForm" autocomplete="off">
+        <label>接口地址
+          <input id="mBase" type="text" placeholder="https://api.example.com/v1" spellcheck="false" />
+        </label>
+        <label>模型名
+          <input id="mModel" type="text" placeholder="deepseek-chat" spellcheck="false" />
+        </label>
+        <label>API Key
+          <input id="mKey" type="password" placeholder="留空 = 保持已保存的 Key 不变" autocomplete="new-password" />
+        </label>
+        <div class="mBtns">
+          <button type="submit" class="primary">保存</button>
+          <button type="button" id="mTest">测试连通性</button>
+          <button type="button" id="mClear" class="ghostBtn">清除 Key</button>
+        </div>
+      </form>
+      <div class="mResult" id="mResult"></div>
+      <div class="mHint">
+        Key 仅保存在服务端 <code id="mStorePath">—</code>，页面只显示掩码，<b>不会回传明文</b>。
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  基准与收盘价：六交易所官方日报（**权威，优先**） · 历史日K与盘中价：新浪公开行情（补齐） · 板块分类为本项目内置表 · 局域网内部自用 · 不转售
+  <span id="footStat"></span>
+</footer>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

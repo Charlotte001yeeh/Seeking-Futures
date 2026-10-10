@@ -1,0 +1,23 @@
+{
+  "name": "seeking-futures-standalone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "脱离 DSH 的独立运行入口：每日日报调度 + 实时后端 + 局域网前端，零三方依赖",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./start.mjs",
+  "scripts": {
+    "start": "node start.mjs",
+    "daily": "node daily-job.mjs",
+    "daily:force": "node daily-job.mjs --force",
+    "scheduler": "node scheduler.mjs",
+    "serve": "node start.mjs --serve-only",
+    "verify": "node test/verify-standalone.mjs"
+  },
+  "dependencies": {},
+  "author": "fyc",
+  "license": "MIT",
+  "comment": "刻意零三方依赖：只需 Node 20+ 与仓库内已构建的 rank20-daemon/dist（零三方依赖的算法模块）。"
+}

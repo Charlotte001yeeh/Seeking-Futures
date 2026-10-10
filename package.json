@@ -1,0 +1,36 @@
+{
+  "name": "futures-rank20-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "国内期货 20 日涨跌幅 rank20 看板：六交易所官方数据 → 口径复现 → 局域网实时前端（运行时零依赖）",
+  "type": "module",
+  "engines": {
+    "node": ">=20.10"
+  },
+  "scripts": {
+    "start": "node standalone/start.mjs",
+    "daily": "node standalone/daily-job.mjs",
+    "serve": "node realtime-server/src/index.mjs",
+    "build": "node rank20-daemon/build.mjs",
+    "test": "node tools/run-tests.mjs",
+    "test:fast": "node tools/run-tests.mjs --fast",
+    "audit": "node tools/audit-publish.mjs",
+    "audit:remote": "node tools/audit-remote.mjs",
+    "status": "node realtime-server/test/status.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  },
+  "keywords": [
+    "futures",
+    "china",
+    "rank20",
+    "market-data",
+    "sse",
+    "zero-dependency"
+  ],
+  "author": "fyc",
+  "license": "MIT"
+}

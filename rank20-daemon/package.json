@@ -1,0 +1,33 @@
+{
+  "name": "dsh-rank20-daemon",
+  "version": "0.1.0",
+  "description": "每日 09:00 定时抓取六交易所官方行情，计算 20 日涨跌幅 rank20 并输出表格到工作区",
+  "private": true,
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "lib",
+    "dist",
+    "cordis.patch.yml"
+  ],
+  "license": "MIT",
+  "author": "fyc",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.0-rc <5",
+    "schemastery": "^3.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

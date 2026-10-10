@@ -1,0 +1,24 @@
+# 换行符与生成文件的处理规则（跨平台 clone 保持一致）
+# 说明：没有这个文件时，Windows 上的 core.autocrlf 会把整仓库改写成 CRLF，
+#       别人 clone 到 Linux/macOS 就会看到"整个文件都变了"的假 diff。
+
+# 源码与文档统一用 LF 入库（工作区检出时由 git 决定，仓库里始终是 LF）
+* text=auto eol=lf
+
+# Windows 专属脚本保留 CRLF，避免某些解析器出错
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制
+*.png binary
+*.jpg binary
+*.ico binary
+*.docx binary
+*.xlsx binary
+*.exe binary
+
+# 生成产物：标记为 generated，GitHub 会把它们在 diff 里折叠
+rank20-daemon/dist/** linguist-generated=true
+rank20-daemon/lib/** linguist-generated=true
+package-lock.json linguist-generated=true -diff
